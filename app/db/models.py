@@ -2,6 +2,11 @@ from sqlalchemy import Column, Text,Integer, String, ForeignKey, DateTime, Boole
 from sqlalchemy.orm import relationship
 from .database import Base
 
+
+
+metadata = Base.metadata
+
+
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
@@ -20,7 +25,7 @@ class Book(Base):
     title = Column(String(50))
     author = Column(String(50))
     publication_date = Column(Date)
-    desc = Column(Text)
+    description = Column(String(255))
     available = Column(Boolean, default=True)
 
 class Rents(Base):
