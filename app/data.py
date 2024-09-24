@@ -5,14 +5,15 @@ from db.models import Base, User, Book
 import os, random
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
-
+import datetime
 
 
 load_dotenv() 
 
+print(os.getenv('SQLALCHEMY_DATABASE_URL'))
 
-SQLALCHEMY_DATABASE_URL=os.getenv('SQLALCHEMY_DATABASE_URL')
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
+engine = create_engine('oracle+oracledb://demo:demo1@localhost:1521/?service_name=ORCLPDB1')
 Session = sessionmaker(bind=engine)
 session = Session()  
 
@@ -20,20 +21,23 @@ session = Session()
 fake = Faker()
 
 
-#drop de la table
-Base.metadata.drop_all(engine)
 
+
+#Base.metadata.drop_all(engine)
+
+
+ 
 # Création de la table
-Base.metadata.create_all(engine)
+#Base.metadata.create_all(engine)
 
 def generate_fake_users(nb):
-    for _ in range(nb):
-        n = random.randint(0, 999999)
+    for j in range(nb):
+        n = random.randint(0, 99999999)
         user = User(
-            id=n,
+            id=j,
             name=fake.name(), 
-            email="fake.email()", 
-            phone="fake.phone_number()",
+            email=fake.email(), 
+            phone=fake.phone_number(),
             hashed_password='............',
             is_active=1)         
 
@@ -44,22 +48,20 @@ def generate_fake_users(nb):
 
 
 def generate_fake_books(nb):
-    for _ in range(nb):
-        n = random.randint(0, 999999)
+    for j in range(nb):
+        n = random.randint(0, 999999999)
         book = Book(
-            id = n,
-            title=fake.name(),
+            id = j,
+            title=fake.word(),
             author=fake.name(),
-            desc = fake.paragraphs(), 
-            publication_date=fake.date(), 
-        )
+            description = fake.word(), 
+            publication_date=datetime.date(1990, 5, 17))
+        
         session.add(book)
     session.commit()
     session.close()
 
 
 
-generate_fake_users(10)
-generate_fake_books(157)
-
-
+generate_fake_users(4700)
+generate_fake_books(157900)
