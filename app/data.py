@@ -1,11 +1,16 @@
 from faker import Faker
 from db.database import SessionLocal
 from sqlalchemy.orm import declarative_base, sessionmaker
-from db.models import Base, User, Book
+from db.models import Base, User, Category, Author, BookCategory , Book
 import os, random
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 import datetime
+import csv
+import random
+
+
+
 
 
 load_dotenv() 
@@ -19,23 +24,13 @@ session = Session()
 
 
 fake = Faker()
-
-
-
-
-#Base.metadata.drop_all(engine)
-
-
- 
-# Création de la table
-#Base.metadata.create_all(engine)
-
 def generate_fake_users(nb):
     for j in range(nb):
-        n = random.randint(0, 99999999)
+        n = j
         user = User(
-            id=j,
-            name=fake.name(), 
+            id=index,
+            lastname=fake.last_name(), 
+            firstname=fake.first_name(), 
             email=fake.email(), 
             phone=fake.phone_number(),
             hashed_password='............',
@@ -45,23 +40,80 @@ def generate_fake_users(nb):
     session.commit()
     session.close()
 
+def generate_fake_category():
+    cat = ['Action', 'Adventure', 'Audiobook', 'Childrens', 'Classics', 'Dystopia', 'Fantasy', 'Fiction', 'High School', 'Historical', 'Historical Fiction', 'Literature', 'Magic', 'Middle Grade', 'Novels', 'Post Apocalyptic', 'Read For School', 'Romance', 'School', 'Science Fiction', 'Science Fiction Fantasy', 'Teen', 'Young Adult']
+    for j in range(cat):
+        cat = Category(
+            id=j,
+            name=cat[j], 
+)         
 
-
-def generate_fake_books(nb):
-    for j in range(nb):
-        n = random.randint(0, 999999999)
-        book = Book(
-            id = j,
-            title=fake.word(),
-            author=fake.name(),
-            description = fake.word(), 
-            publication_date=datetime.date(1990, 5, 17))
-        
-        session.add(book)
+        session.add(cat)
     session.commit()
-    session.close()
+    session.close() 
+
+def generate_fake_author():
+    for j in range(50):
+        cat = Category(
+            id=j,
+            name=fake.name(), 
+            image = 'test.jpg')         
+
+        session.add(cat)
+    session.commit()
+    session.close() 
+
+def generate_fake_book_category():
+    for j in range(300):
+        bc = Category(
+            id=j,
+            category_id= random.randint(1, 20), 
+            boook_id = random.randint(1, 400))         
+
+        session.add(bc)
+    session.commit()
+    session.close() 
 
 
 
-generate_fake_users(4700)
-generate_fake_books(157900)
+
+
+
+    
+generate_fake_users(40)
+generate_fake_category()
+generate_fake_author()
+
+
+
+
+with open('books.csv', mode='r', encoding='utf-8') as file:
+    # Créer un lecteur CSV
+    csv_reader = csv.reader(file)
+    
+    # Boucle sur chaque ligne du fichier CSV
+
+    for index, row in enumerate(csv_reader, start=2):
+        if index > 400:
+            break
+        book = Book (
+            id=index,
+            title = row[1],
+            author_id = random.randint(1, 50),
+            publication_date = datetime.strptime(row[14], '%m/%d/%y').date(),
+            description = row[5],
+            available = 1,
+            image = row[21],
+            edition = row[11],
+            isbn = row[7],
+            publisher = row[13])         
+
+        session.add(book)
+        session.commit()
+        session.close() 
+
+
+
+
+
+generate_fake_book_category()
