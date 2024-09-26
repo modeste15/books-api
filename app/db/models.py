@@ -19,7 +19,7 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     
     # Relation avec le modèle Rents (emprunts)
-    rents = relationship("Rent", back_populates="user")
+    #rents = relationship("Rent", back_populates="user")
 
 class Author(Base):
     __tablename__ = 'authors'
@@ -27,7 +27,7 @@ class Author(Base):
     name = Column(String(50), nullable=False)
     image = Column(String(50), nullable=False)
 
-    books = relationship('Book', back_populates='author')
+    #books = relationship('Book', back_populates='author')
 
 
 class Category(Base):
@@ -35,7 +35,7 @@ class Category(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False)
 
-    books = relationship('Book', back_populates='category')
+    #books = relationship('Book', back_populates='category')
 
 
 class BookCategory(Base):
@@ -47,19 +47,19 @@ class BookCategory(Base):
 
 class Book(Base):
     __tablename__ = 'books'
-    id = Column(Integer, primary_key=True)
-    title = Column(String(50))
+    id = Column(Integer, primary_key=True, )
+    title = Column(String(255))
     author_id = Column(Integer, ForeignKey('authors.id'), nullable=False)
     publication_date = Column(Date)
-    description = Column(String(255))
+    description = Column(Text)
     available = Column(Boolean, default=True)
     image = Column(String(250))
     edition = Column(String(250))
-    isbn = Column(Integer(50))
+    isbn = Column(String(50))
     publisher = Column(String(250))
 
-    author = relationship('Author', back_populates='books')
-    rents = relationship('Rent', back_populates='book')
+    #author = relationship('Author', back_populates='books')
+    #rents = relationship('Rent', back_populates='book')
 
 
 class Rent(Base):
@@ -71,5 +71,5 @@ class Rent(Base):
     return_date = Column(Date, nullable=True)
     
     # Relations avec User et Book
-    user = relationship('User', back_populates='rents')
-    book = relationship('Book', back_populates='rents')
+    #user = relationship('User', back_populates='rents')
+    #book = relationship('Book', back_populates='rents')
