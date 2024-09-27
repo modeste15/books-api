@@ -1,6 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db import models, database
+from app.validator.user import UserSchema
+from app.services.user_service import insert_user
+
+
 
 router = APIRouter()
 
@@ -14,17 +18,19 @@ def get_db():
 
 # Add USER
 @router.post("/")
-def create_user(name: str, email: str, phone: str, db: Session = Depends(get_db)):
-    # Vérifier si l'utilisateur existe déjà
-    user = db.query(models.User).filter(models.User.email == email).first()
-    if user:
+def create_user(user: UserSchema, db: Session = Depends(get_db)):
+
+    # Si l'utilisateur existe déjà
+    user_check = db.query(models.User).filter(models.User.email == user.email).first()
+    
+    if user_check:
         raise HTTPException(status_code=400, detail="Email déjà utilisé")
     
-    new_user = models.User(name=name, email=email, phone=phone)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
+    
+    user = insert_user(db, user.firstname, user.lastname , user.email, user.phone, user.hashed_password)
+
+
+    return user
 
 # ALL USERS
 @router.get("/")
