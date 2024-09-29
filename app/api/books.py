@@ -31,7 +31,7 @@ def get_books(db: Session = Depends(get_db)):
 @router.get("/search/")
 def search_books(query: str, db: Session = Depends(get_db)):
     books = db.query(models.Book).filter(
-        (models.Book.title.contains(query)) | (models.Book.author.contains(query))
+        (models.Book.title.contains(query)) 
     ).all()
     return books
 

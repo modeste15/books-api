@@ -104,10 +104,10 @@ def upload_book ():
 
 
 
-#generate_fake_users(40)
+generate_fake_users(40)
 #generate_fake_category()
 #generate_fake_author()
-#upload_book()
+upload_book()
 
 generate_fake_book_category()
 
