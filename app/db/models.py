@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Text,Integer, String, ForeignKey, DateTime, Boolean, Date
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Text,Integer, String, ForeignKey, DateTime, Boolean, Date,Sequence
+from sqlalchemy.orm import relationship,deferred
 from .database import Base
 
 
@@ -9,13 +9,13 @@ metadata = Base.metadata
 
 class User(Base):
     __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer,  Sequence('user_seq')  , primary_key=True,autoincrement=True)
     lastname = Column(String(50))
     firstname = Column(String(50))
     image = Column(String(50))
     email = Column(String(50))
     phone = Column(String(50))
-    hashed_password = Column(String(50))
+    password = deferred(Column(String(250)))
     is_active = Column(Boolean, default=True)
     
     # Relation avec le modèle Rents (emprunts)

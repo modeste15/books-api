@@ -31,8 +31,7 @@ def generate_fake_users(nb):
             lastname=fake.last_name(), 
             firstname=fake.first_name(), 
             email=fake.email(), 
-            phone=fake.phone_number(),
-            hashed_password='............',
+            password='............',
             is_active=1)         
 
         session.add(user)

@@ -1,17 +1,17 @@
-from pydantic import BaseModel, validator, ValidationError
+from pydantic import BaseModel, validator, ValidationError,EmailStr
 
 
 class UserSchema(BaseModel):
-    email: str
     lastname: str
     firstname: str
-    email: str
+    email: EmailStr
     phone: str
-    hashed_password: str
+    password: str
+    image : str
 
-    @validator('hashed_password')
+    @validator('password')
     def password(cls, value):
-        if value == '2024':
+        if all(char == value[0] for char in value) : 
             raise ValueError('Mot de passe invalide')
         return value
 
