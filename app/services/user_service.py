@@ -1,22 +1,24 @@
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db.models import User
 from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
-
-
-SECRET_KEY = "your_secret_key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-
-
-from fastapi import Depends, HTTPException, status
+from dotenv import load_dotenv
 from fastapi.security import OAuth2PasswordBearer
+import os
+load_dotenv()
+from app.db import models, database
+
+
+
+
+SECRET_KEY = os.getenv('SECRET_KEY')
+ALGORITHM = os.getenv('ALGORITHM')
+ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv('DEBUG_MODE')
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-
 
 
 def insert_user(db: Session, firstname, lastname , email, phone, password ):
@@ -29,7 +31,6 @@ def insert_user(db: Session, firstname, lastname , email, phone, password ):
     db.refresh(new_user)
     
     return new_user
-
 
 
 def verify_password(plain_password, password):
@@ -49,15 +50,22 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def verify_token(token: str, credentials_exception):
+def verify_token(db: Session,token: str, credentials_exception):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
+
+        id: str = payload.get("sub")
+
+        if id is None:
             raise credentials_exception
-        return username
+
+            user = db.query(models.User).filter(models.User.id == id).first()
+
+            return user
+        
     except JWTError:
         raise credentials_exception
+    
     
 def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(

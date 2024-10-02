@@ -64,7 +64,7 @@ class Book(Base):
 
 class Rent(Base):
     __tablename__ = 'rents'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, Sequence('rent_seq') , primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     book_id = Column(Integer, ForeignKey("books.id"))
     start_date = Column(Date)

@@ -4,17 +4,16 @@ from app.db import models, database
 from app.validator.user import UserSchema
 from app.validator.auth import AuthSchema
 from app.services.user_service import insert_user, verify_password,create_access_token , verify_token , get_current_user
-from datetime import datetime, timedelta
 from jose import JWTError, jwt
-SECRET_KEY = "your_secret_key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
+from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+import os
 
-from fastapi.security import OAuth2PasswordRequestForm
-
+load_dotenv()
+SECRET_KEY = os.getenv('SECRET_KEY')
+ALGORITHM = os.getenv('ALGORITHM')
+ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv('DEBUG_MODE')
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -50,7 +49,7 @@ def auth(user: AuthSchema, db: Session = Depends(get_db)):
     check_user = db.query(models.User).filter(models.User.email == user.email).first()
     
     if user and verify_password( user.password,check_user.password):
-        token = create_access_token({"sub": str(check_user.id)})
+        token = create_access_token({"sub": str(check_user.id) , "admin" : "1" })
         return {"user" : check_user.email,  "access_token": token, "token_type": "bearer"}
     else :
         raise HTTPException(status_code=400, detail="Connexion Impossible")
@@ -89,20 +88,28 @@ async def read_users_me(request: Request,db: Session = Depends(get_db)):
 
     token = token.replace("Bearer ", "")
 
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    #try:
+    payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
 
-        id: str = payload.get("sub")
-        if id is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token payload invalid",
-            )
-        user = db.query(models.User).filter(models.User.id == id).first()
+    print("payload", payload )
 
-        return user
-    except JWTError:
+    id: str = payload.get("sub")
+    admin: str = payload.get("admin")
+
+    print("id", id )
+    print("admin", admin )
+
+
+    if id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token is invalid or expired",
+            detail="Token payload invalid",
         )
+    user = db.query(models.User).filter(models.User.id == id).first()
+
+    return user
+    #except JWTError:
+    #    raise HTTPException(
+    #        status_code=status.HTTP_401_UNAUTHORIZED,
+    #        detail="Token is invalid or expired",
+    #    )

@@ -15,8 +15,6 @@ import random
 
 load_dotenv() 
 
-print(os.getenv('SQLALCHEMY_DATABASE_URL'))
-
 
 engine = create_engine('oracle+oracledb://demo:demo1@localhost:1521/?service_name=ORCLPDB1')
 Session = sessionmaker(bind=engine)
@@ -27,7 +25,6 @@ fake = Faker()
 def generate_fake_users(nb):
     for j in range(nb):
         user = User(
-            id=j,
             lastname=fake.last_name(), 
             firstname=fake.first_name(), 
             email=fake.email(), 
@@ -103,9 +100,9 @@ def upload_book ():
 
 
 
-generate_fake_users(40)
-#generate_fake_category()
-#generate_fake_author()
+generate_fake_users(100)
+generate_fake_category()
+generate_fake_author()
 upload_book()
 
 generate_fake_book_category()
