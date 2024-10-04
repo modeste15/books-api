@@ -48,8 +48,8 @@ def auth(user: AuthSchema, db: Session = Depends(get_db)):
     # Si l'utilisateur existe déjà
     check_user = db.query(models.User).filter(models.User.email == user.email).first()
     
-    if user and verify_password( user.password,check_user.password):
-        token = create_access_token({"sub": str(check_user.id) , "admin" : "1" })
+    if check_user and verify_password( user.password,check_user.password):
+        token = create_access_token({"sub": str(check_user.id) , "admin" : str(check_user.is_admin) })
         return {"user" : check_user.email,  "access_token": token, "token_type": "bearer"}
     else :
         raise HTTPException(status_code=400, detail="Connexion Impossible")

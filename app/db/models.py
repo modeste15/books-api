@@ -17,9 +17,11 @@ class User(Base):
     phone = Column(String(50))
     password = deferred(Column(String(250)))
     is_active = Column(Boolean, default=True)
+    is_admin = Column(Boolean, default=True)
+
+    rents = relationship("Rent", back_populates="user")
+
     
-    # Relation avec le modèle Rents (emprunts)
-    #rents = relationship("Rent", back_populates="user")
 
 class Author(Base):
     __tablename__ = 'authors'
@@ -27,7 +29,6 @@ class Author(Base):
     name = Column(String(50), nullable=False)
     image = Column(String(50), nullable=False)
 
-    #books = relationship('Book', back_populates='author')
 
 
 class Category(Base):
@@ -35,7 +36,6 @@ class Category(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False)
 
-    #books = relationship('Book', back_populates='category')
 
 
 class BookCategory(Base):
@@ -43,6 +43,7 @@ class BookCategory(Base):
     id = Column(Integer, primary_key=True)
     category_id = Column(Integer, ForeignKey("categories.id"))
     book_id = Column(Integer, ForeignKey("books.id"))
+    
 
 
 class Book(Base):
@@ -58,8 +59,10 @@ class Book(Base):
     isbn = Column(String(50))
     publisher = Column(String(250))
 
-    #author = relationship('Author', back_populates='books')
-    #rents = relationship('Rent', back_populates='book')
+    rents = relationship("Rent", back_populates="book")
+
+
+
 
 
 class Rent(Base):
@@ -69,7 +72,8 @@ class Rent(Base):
     book_id = Column(Integer, ForeignKey("books.id"))
     start_date = Column(Date)
     return_date = Column(Date, nullable=True)
+    status = Column(Boolean, default=True)
+
     
-    # Relations avec User et Book
-    #user = relationship('User', back_populates='rents')
-    #book = relationship('Book', back_populates='rents')
+    user = relationship("User", back_populates="rents")
+    book = relationship("Book", back_populates="rents")

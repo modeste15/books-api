@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db import models, database
+from sqlalchemy.orm import joinedload
+
 
 router = APIRouter()
 
@@ -38,10 +40,35 @@ def search_books(query: str, db: Session = Depends(get_db)):
 # Route pour obtenir les détails d'un livre spécifique par son ID
 @router.get("/{book_id}")
 def get_book(book_id: int, db: Session = Depends(get_db)):
-    book = db.query(models.Book).filter(models.Book.id == book_id).first()
+
+    book = db.query(models.Book).options(
+        joinedload(models.Book.rents).joinedload(models.Rent.user) 
+    ).filter(models.Book.id == book_id).first()
+
     if book is None:
         raise HTTPException(status_code=404, detail="Livre non trouvé")
-    return book
+
+    book_info = {
+        "id": book.id,
+        "title": book.title,
+        "author_id": book.author_id,
+        "publication_date": book.publication_date,
+        "rents": []
+    }
+
+    # Ajouter les informations des emprunts et des utilisateurs
+    for rent in book.rents:
+        book_info["rents"].append({
+            "rent_id": rent.id,
+            "user_id": rent.user.id,
+            "user_name": f"{rent.user.firstname} {rent.user.lastname}",
+            "user_email": rent.user.email,
+            "start_date": rent.start_date,
+            "return_date": rent.return_date,
+            "author": rent.author
+        })
+
+    return book_info
 
 # Route pour supprimer un livre par son ID
 @router.delete("/{book_id}")
