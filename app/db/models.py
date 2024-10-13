@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Text,Integer, String, ForeignKey, DateTime, Boolean, Date
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Text,Integer, String, ForeignKey, DateTime, Boolean, Date,Sequence
+from sqlalchemy.orm import relationship,deferred
 from .database import Base
 
 
@@ -9,17 +9,19 @@ metadata = Base.metadata
 
 class User(Base):
     __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer,  Sequence('user_seq')  , primary_key=True,autoincrement=True)
     lastname = Column(String(50))
     firstname = Column(String(50))
     image = Column(String(50))
     email = Column(String(50))
     phone = Column(String(50))
-    hashed_password = Column(String(50))
+    password = deferred(Column(String(250)))
     is_active = Column(Boolean, default=True)
+    is_admin = Column(Boolean, default=True)
+
+    rents = relationship("Rent", back_populates="user")
+
     
-    # Relation avec le modèle Rents (emprunts)
-    #rents = relationship("Rent", back_populates="user")
 
 class Author(Base):
     __tablename__ = 'authors'
@@ -27,7 +29,6 @@ class Author(Base):
     name = Column(String(50), nullable=False)
     image = Column(String(50), nullable=False)
 
-    #books = relationship('Book', back_populates='author')
 
 
 class Category(Base):
@@ -35,7 +36,6 @@ class Category(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(50), nullable=False)
 
-    #books = relationship('Book', back_populates='category')
 
 
 class BookCategory(Base):
@@ -43,11 +43,12 @@ class BookCategory(Base):
     id = Column(Integer, primary_key=True)
     category_id = Column(Integer, ForeignKey("categories.id"))
     book_id = Column(Integer, ForeignKey("books.id"))
+    
 
 
 class Book(Base):
     __tablename__ = 'books'
-    id = Column(Integer, primary_key=True, )
+    id = Column(Integer, Sequence('book_seq'),primary_key=True, )
     title = Column(String(255))
     author_id = Column(Integer, ForeignKey('authors.id'), nullable=False)
     publication_date = Column(Date)
@@ -58,18 +59,21 @@ class Book(Base):
     isbn = Column(String(50))
     publisher = Column(String(250))
 
-    #author = relationship('Author', back_populates='books')
-    #rents = relationship('Rent', back_populates='book')
+    rents = relationship("Rent", back_populates="book")
+
+
+
 
 
 class Rent(Base):
     __tablename__ = 'rents'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, Sequence('rent_seq') , primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     book_id = Column(Integer, ForeignKey("books.id"))
     start_date = Column(Date)
     return_date = Column(Date, nullable=True)
+    status = Column(Boolean, default=True)
+
     
-    # Relations avec User et Book
-    #user = relationship('User', back_populates='rents')
-    #book = relationship('Book', back_populates='rents')
+    user = relationship("User", back_populates="rents")
+    book = relationship("Book", back_populates="rents")

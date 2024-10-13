@@ -1,6 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db import models, database
+from sqlalchemy.orm import joinedload
+from app.validator.books import BooksUpdateSchema, BookSchema
+
+
+
 
 router = APIRouter()
 
@@ -14,8 +19,9 @@ def get_db():
 
 # Route pour ajouter un nouveau livre
 @router.post("/")
-def create_book(title: str, author: str, publication_date: str, db: Session = Depends(get_db)):
-    new_book = models.Book(title=title, author=author, publication_date=publication_date, is_available=True)
+def create_book(book : BookSchema , db: Session = Depends(get_db)):
+
+    new_book = models.Book(**book.dict())
     db.add(new_book)
     db.commit()
     db.refresh(new_book)
@@ -38,10 +44,35 @@ def search_books(query: str, db: Session = Depends(get_db)):
 # Route pour obtenir les détails d'un livre spécifique par son ID
 @router.get("/{book_id}")
 def get_book(book_id: int, db: Session = Depends(get_db)):
-    book = db.query(models.Book).filter(models.Book.id == book_id).first()
+
+    book = db.query(models.Book).options(
+        joinedload(models.Book.rents).joinedload(models.Rent.user) 
+    ).filter(models.Book.id == book_id).first()
+
     if book is None:
         raise HTTPException(status_code=404, detail="Livre non trouvé")
-    return book
+
+    book_info = {
+        "id": book.id,
+        "title": book.title,
+        "author_id": book.author_id,
+        "publication_date": book.publication_date,
+        "rents": []
+    }
+
+    # Ajouter les informations des emprunts et des utilisateurs
+    for rent in book.rents:
+        book_info["rents"].append({
+            "rent_id": rent.id,
+            "user_id": rent.user.id,
+            "user_name": f"{rent.user.firstname} {rent.user.lastname}",
+            "user_email": rent.user.email,
+            "start_date": rent.start_date,
+            "return_date": rent.return_date,
+            "author": rent.author
+        })
+
+    return book_info
 
 # Route pour supprimer un livre par son ID
 @router.delete("/{book_id}")
@@ -54,19 +85,21 @@ def delete_book(book_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"detail": "Livre supprimé avec succès"}
 
-# Route pour mettre à jour un livre (modification des détails)
 @router.put("/{book_id}")
-def update_book(book_id: int, title: str = None, author: str = None, publication_date: str = None, db: Session = Depends(get_db)):
+def update_book(book_id: int,book_update: BooksUpdateSchema, db: Session = Depends(get_db)):
+    print("ok delete")
     book = db.query(models.Book).filter(models.Book.id == book_id).first()
     if book is None:
         raise HTTPException(status_code=404, detail="Livre non trouvé")
     
-    if title:
-        book.title = title
-    if author:
-        book.author = author
-    if publication_date:
-        book.publication_date = publication_date
+    if book_update.title:
+        book.title = book_update.title
+    if book_update.author:
+        book.author = book_update.author
+    if book_update.publication_date:
+        book.publication_date = book_update.publication_date
+    if book_update.is_available:
+        book.is_available = book_update.is_available
 
     db.commit()
     db.refresh(book)
