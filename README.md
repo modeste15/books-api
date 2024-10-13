@@ -71,7 +71,7 @@ cd app/
 python3 data.py
 ```
 
-### 5. Workflow with SonarQube
+### 4. Workflow with SonarQube
 
 This project integrates **SonarQube** for continuous code quality checks. The workflow for running SonarQube is already set up in the project.
 
