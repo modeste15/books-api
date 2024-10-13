@@ -41,7 +41,7 @@ def create_user(user: UserSchema, db: Session = Depends(get_db)):
     user = insert_user(db, user.firstname, user.lastname , user.email, user.phone, user.password)
     return user
 
-# Add USER
+# Login USER
 @router.post("/login")
 def auth(user: AuthSchema, db: Session = Depends(get_db)):
 

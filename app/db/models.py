@@ -48,7 +48,7 @@ class BookCategory(Base):
 
 class Book(Base):
     __tablename__ = 'books'
-    id = Column(Integer, primary_key=True, )
+    id = Column(Integer, Sequence('book_seq'),primary_key=True, )
     title = Column(String(255))
     author_id = Column(Integer, ForeignKey('authors.id'), nullable=False)
     publication_date = Column(Date)
