@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api import users, books , rents
+from app.api import users, books , rents , auth
 from app.db import models
 from app.db.database import engine
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,9 +22,11 @@ app.add_middleware(
 
 
 # Inclure les routeurs pour chaque module de l'API
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(users.router, prefix="/users", tags=["Users"])
 app.include_router(books.router, prefix="/books", tags=["Books"])
 app.include_router(rents.router, prefix="/rents", tags=["Rents"])
+
 
 
 # Endpoint racine pour vérifier si l'API fonctionne
